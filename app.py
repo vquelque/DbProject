@@ -43,9 +43,7 @@ def get():
     table = request.form.get('comp_select')
     if table == None :
         table = 'host'
-    print(table)
     selected_table = str(table)
-    print(selected_table)
     return render_template('index.html', tables = metadata.sorted_tables,
     columns = metadata.tables[table].columns.keys(), 
     records = dump_table(table), 
