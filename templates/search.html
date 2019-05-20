@@ -1,0 +1,15 @@
+{% extends 'layout.html' %} {% block body %}
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+    <h1 class="h1">Search</h1>
+  </div>
+  {% include 'includes/_select_table.html' %}
+  <br>
+  <form action="post" class="form-group"> 
+      <input type="text" class="form-control" name="text to search" id="query">
+      <input type="button" class="form-control" value="Submit" class="btn btn-primary">
+  </form>
+</main>
+{% endblock body %}

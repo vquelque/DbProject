@@ -49,6 +49,10 @@ def get():
     records = dump_table(table), 
     selected_table = selected_table)
 
+@app.route('/search', methods=['GET', 'POST'])
+def search() :
+    return render_template('search.html', tables = metadata.sorted_tables)
+
 if __name__ == "__main__":
     app.run()
 
