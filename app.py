@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, Table
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired
 
 #general configuration
@@ -45,7 +45,15 @@ def dump_table(table_name) :
 
 #search form
 class SearchForm(FlaskForm):
+    select_col = SelectField('column to search :')
     query = StringField('search query :', validators=[DataRequired()])
+    def __init__(self, columns, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+        col_choices = []
+        for col in columns :
+            col_choices.append((col.name,col.name))
+        print(col_choices)
+        self.select_col.choices = col_choices
     
 
 @app.route('/', methods=['GET', 'POST'])
@@ -64,9 +72,10 @@ def search() :
     table = request.form.get('comp_select')
     if table == None :
         table = 'host'
-    form = SearchForm()
+    columns = metadata.tables[table].columns
+    form = SearchForm(columns)
     if form.validate_on_submit():
-        return render_template('search.html', tables = metadata.sorted_tables, form=form)
+        return render_template('search.html', tables = metadata.sorted_tables,form=form)
     return render_template('search.html', tables = metadata.sorted_tables, form=form)
 
 if __name__ == "__main__":
