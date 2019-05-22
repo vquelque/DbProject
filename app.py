@@ -1,10 +1,15 @@
 from flask import Flask, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, Table
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
 #general configuration
 app = Flask(__name__)
 #for hot reoading
 app.debug = True
+app.secret_key='super_secret'
 
 #database connection
 engine = create_engine('oracle://C##DB2019_G43:DB2019_G43@cs322-db.epfl.ch:1521/ORCLCDB')
@@ -38,6 +43,11 @@ def dump_table(table_name) :
     ResultProxy.close()
     return result
 
+#search form
+class SearchForm(FlaskForm):
+    query = StringField('search query :', validators=[DataRequired()])
+    
+
 @app.route('/', methods=['GET', 'POST'])
 def get():
     table = request.form.get('comp_select')
@@ -51,7 +61,13 @@ def get():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search() :
-    return render_template('search.html', tables = metadata.sorted_tables)
+    table = request.form.get('comp_select')
+    if table == None :
+        table = 'host'
+    form = SearchForm()
+    if form.validate_on_submit():
+        return render_template('search.html', tables = metadata.sorted_tables, form=form)
+    return render_template('search.html', tables = metadata.sorted_tables, form=form)
 
 if __name__ == "__main__":
     app.run()

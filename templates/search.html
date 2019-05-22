@@ -7,9 +7,10 @@
   </div>
   {% include 'includes/_select_table.html' %}
   <br>
-  <form action="post" class="form-group"> 
-      <input type="text" class="form-control" name="text to search" id="query">
-      <input type="button" class="form-control" value="Submit" class="btn btn-primary">
-  </form>
+  <form method="POST" action="/search" class="form-group">
+    {{ form.csrf_token }}
+    {{ form.query.label }} {{ form.query(size=100) }}
+    <input type="submit" class='btn btn-primary' value="Go">
+</form>
 </main>
 {% endblock body %}
