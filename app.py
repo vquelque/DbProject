@@ -54,7 +54,18 @@ class SearchForm(FlaskForm):
             col_choices.append((col.name,col.name))
         print(col_choices)
         self.select_col.choices = col_choices
-    
+
+#insert form
+class InsertForm(FlaskForm):
+    select_col = SelectField('column to insert :')
+    query = StringField('insert query :', validators=[DataRequired()])
+    def __init__(self, columns, *args, **kwargs):
+        super(InsertForm, self).__init__(*args, **kwargs)
+        col_choices = []
+        for col in columns :
+            col_choices.append((col.name,col.name))
+        print(col_choices)
+        self.select_col.choices = col_choices       
 
 @app.route('/', methods=['GET', 'POST'])
 def get():
@@ -77,6 +88,17 @@ def search() :
     if form.validate_on_submit():
         return render_template('search.html', tables = metadata.sorted_tables,form=form)
     return render_template('search.html', tables = metadata.sorted_tables, form=form)
+
+@app.route('/insert', methods=['GET', 'POST'])
+def insert():
+    table = request.form.get('comp_select')
+    if table == None :
+        table = 'host'
+    columns = metadata.tables[table].columns
+    form = InsertForm(columns)
+    if form.validate_on_submit():
+        return render_template('insert.html', tables = metadata.sorted_tables,form=form)
+    return render_template('insert.html', tables = metadata.sorted_tables, form=form)
 
 if __name__ == "__main__":
     app.run()

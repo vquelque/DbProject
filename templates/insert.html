@@ -1,0 +1,29 @@
+{% extends 'layout.html' %} {% block body %}
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+    <h1 class="h1">Insert</h1>
+  </div>
+  <form class="form-inline" method="POST" action="{{ url_for('insert') }}">
+    <div class="form-group">
+      <div class="input-group">
+          <span class="input-group-addon">Table to insert :  </span>
+              <select name="comp_select" class="selectpicker form-control custom-select">
+                {% for element in tables %}
+                <option value="{{element}}" {% if element == selected_table %}selected{% endif %} >{{ element }}</option>
+                {% endfor %}
+              </select>
+      </div>
+      <button type="submit" class="btn btn-default">Go</button>
+    </div>
+</form>
+  <br>
+  <form method="POST" action="/insert" class="form-group">
+    {{ form.csrf_token }}
+    {{ form.select_col.label }} {{ form.select_col() }}
+    {{ form.query.label }} {{ form.query(size=100) }}
+    <input type="submit" class='btn btn-primary' value="Go">
+</form>
+</main>
+{% endblock body %}
