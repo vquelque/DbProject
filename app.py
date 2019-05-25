@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, Table
 from flask_wtf import FlaskForm
@@ -10,6 +10,7 @@ app = Flask(__name__)
 # for hot reoading
 app.debug = True
 app.secret_key = "super_secret"
+session = Session()
 
 # database connection
 engine = create_engine(
@@ -47,7 +48,7 @@ def dump_table(table_name):
 
 
 def search_in_table(query, table_name, col_name):
-    sql_query = "SELECT * FROM {0} WHERE {1} LIKE '%{2}%'".format(table_name,col_name,query)
+    sql_query = "SELECT * FROM {0} WHERE UPPER({1}) LIKE UPPER('%{2}%')".format(table_name,col_name,query)
     ResultProxy = connection.execute(sql_query)
     result = ResultProxy.fetchmany(10)
     return result
@@ -63,7 +64,6 @@ class SearchForm(FlaskForm):
         col_choices = []
         for col in columns:
             col_choices.append((col.name, col.name))
-        print(col_choices)
         self.select_col.choices = col_choices
 
 #insert form
@@ -75,7 +75,6 @@ class InsertForm(FlaskForm):
         col_choices = []
         for col in columns :
             col_choices.append((col.name,col.name))
-        print(col_choices)
         self.select_col.choices = col_choices       
 
 
@@ -84,7 +83,7 @@ def get():
     table = request.form.get("comp_select")
     if table == None:
         table = "host"
-    selected_table = str(table)
+    selected_table = table
     return render_template(
         "index.html",
         tables=metadata.sorted_tables,
@@ -96,24 +95,30 @@ def get():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
-    table = request.form.get("comp_select")
-    if table == None:
-        table = "host"
-    selected_table = table
-    columns = metadata.tables[table].columns
+    if 'change_table' in request.form :
+        selected_table = request.form.get("comp_select")
+        print(selected_table)
+        session['curr_table'] = selected_table
+    if 'curr_table' in session :
+        selected_table = session['curr_table']
+    else :
+        selected_table = "host"
+    columns = metadata.tables[selected_table].columns
     form = SearchForm(columns)
-    if form.validate_on_submit():
-        query = form.query.data
-        col_name = form.select_col.data
-        table = selected_table
-        records = search_in_table(query,table,col_name)
+    query = form.query.data
+    col_name = form.select_col.data
+    print(query)
+    print(col_name)
+    print(selected_table)
+    if form.validate_on_submit() :
+        records = search_in_table(query,selected_table,col_name)
         return render_template(
-            "search.html",
-            tables=metadata.sorted_tables,
-            form=form,
-            columns=columns,
-            records=records, 
-            selected_table=selected_table
+        "search.html",
+        tables=metadata.sorted_tables,
+        form=form,
+        columns=columns,
+        records=records, 
+        selected_table=selected_table
         )
     return render_template("search.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table,columns=columns)
 
