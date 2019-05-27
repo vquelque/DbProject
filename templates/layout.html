@@ -46,36 +46,36 @@
             <div class="sidebar-sticky">
               <ul class="nav flex-column">
                 <li class="nav-item">
-                  <a class="nav-link active" href="/">
+                  <a class="nav-link {{ 'active' if active_page == 'table' else '' }}" href="/">
                     <span data-feather="home"></span>
                     Tables <span class="sr-only">(current)</span>
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/search">
+                  <a class="nav-link {{ 'active' if active_page == 'basic_search' else '' }}" href="/search">
                     <span data-feather="file-text"></span>
                     Basic Search
                   </a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/advancedsearch">
+                <li class="nav-item}}">
+                  <a class="nav-link {{ 'active' if active_page == 'advanced_search' else '' }}" href="/advancedsearch">
                     <span data-feather="file-text"></span>
                     Advanced Search
                   </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{ 'active' if active_page == 'menu1' else '' }}">
                   <a class="nav-link" href="#">
                     <span data-feather="file-text"></span>
                     Queries
                   </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{ 'active' if active_page == 'menu1' else '' }}">
                   <a class="nav-link" href="/insert">
                     <span data-feather="file-text"></span>
                     Insert
                   </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{ 'active' if active_page == 'menu1' else '' }}">
                   <a class="nav-link" href="#">
                     <span data-feather="file-text"></span>
                     Delete
