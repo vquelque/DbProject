@@ -51,6 +51,7 @@ def search_in_table(query, table_name, col_name):
     sql_query = "SELECT * FROM {0} WHERE UPPER({1}) LIKE UPPER('%{2}%')".format(
         table_name, col_name, query
     )
+    print(sql_query, file=sys.stderr)
     ResultProxy = connection.execute(sql_query)
     result = ResultProxy.fetchmany(10)
     return result
@@ -67,7 +68,16 @@ def insert_in_table(col_value, table_name):
     print(sql_query, file=sys.stderr)
     #ResultProxy = connection.execute(sql_query)
     # result ?
-    #ResultProxy.close()
+
+def delete_in_table(name, table_name, col_name):
+
+    # Maybe change for int values or others 
+    sql_query = "DELETE FROM {0} WHERE UPPER({1}) LIKE UPPER('{2}')".format(
+        table_name, col_name, name
+    )
+    print(sql_query, file=sys.stderr)
+    # ResultProxy = connection.execute(sql_query)
+    # result ?
 
 def advance_search(
     city, property_type, number_of_guests, available_from, available_to, price_max
@@ -150,6 +160,16 @@ class InsertForm(FlaskForm):
         super(InsertForm, self).__init__(*args, **kwargs)
         self.value.label = col_name      
 
+class DeleteForm(FlaskForm):
+    select_col = SelectField("column :")
+    query = StringField("Delete row where :", validators=[DataRequired()])
+
+    def __init__(self, columns, *args, **kwargs):
+        super(DeleteForm, self).__init__(*args, **kwargs)
+        col_choices = []
+        for col in columns:
+            col_choices.append((col.name, col.name))
+        self.select_col.choices = col_choices
 
 @app.route("/", methods=["GET", "POST"])
 def get():
@@ -284,6 +304,38 @@ def insert():
         )
 
     return render_template("insert.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table)
+
+@app.route("/delete", methods=["GET", "POST"])
+def delete():
+    if "change_table" in request.form:
+        selected_table = request.form.get("comp_select")
+        print(selected_table)
+        session["curr_table"] = selected_table
+    if "curr_table" in session:
+        selected_table = session["curr_table"]
+    else:
+        selected_table = "host"
+    columns = metadata.tables[selected_table].columns
+    form = DeleteForm(columns)
+    
+    if form.validate_on_submit():
+        query = form.query.data
+        col_name = form.select_col.data
+        delete_in_table(query, selected_table, col_name)
+        return render_template(
+            "delete.html",
+            tables=metadata.sorted_tables,
+            form=form,
+            columns=columns,
+            selected_table=selected_table,
+        )
+    return render_template(
+        "delete.html",
+        tables=metadata.sorted_tables,
+        form=form,
+        selected_table=selected_table,
+        columns=columns,
+    )
 
 if __name__ == "__main__":
     app.run()
