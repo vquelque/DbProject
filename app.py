@@ -1,3 +1,5 @@
+from __future__ import print_function  # In python 2.7
+import sys
 from flask import Flask, render_template, request, url_for, Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, Table, text
@@ -53,6 +55,19 @@ def search_in_table(query, table_name, col_name):
     result = ResultProxy.fetchmany(10)
     return result
 
+def insert_in_table(col_value, table_name):
+    # query is of the form [(host_id, 2324),(host_name, "Robin"),(col_name, value),...]
+
+    sql_query = "INSERT INTO {0} (".format(table_name)
+    s = "VALUES ("
+    for (c,v) in col_value:
+        sql_query = sql_query + "{0}, ".format(c)
+        s = s + "{0}, ".format(v)
+    sql_query = sql_query[:-2] + ") " + s[:-2] + ")"
+    print(sql_query, file=sys.stderr)
+    #ResultProxy = connection.execute(sql_query)
+    # result ?
+    #ResultProxy.close()
 
 def advance_search(
     city, property_type, number_of_guests, available_from, available_to, price_max
@@ -130,15 +145,10 @@ class SearchAdvancedForm(FlaskForm):
 
 # insert form
 class InsertForm(FlaskForm):
-    select_col = SelectField("column to insert :")
-    query = StringField("insert query :", validators=[DataRequired()])
-
-    def __init__(self, columns, *args, **kwargs):
+    value = StringField(validators=[DataRequired()])
+    def __init__(self, col_name, *args, **kwargs):
         super(InsertForm, self).__init__(*args, **kwargs)
-        col_choices = []
-        for col in columns:
-            col_choices.append((col.name, col.name))
-        self.select_col.choices = col_choices
+        self.value.label = col_name      
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -227,15 +237,53 @@ def adv_search():
 
 @app.route("/insert", methods=["GET", "POST"])
 def insert():
-    table = request.form.get("comp_select")
-    if table == None:
-        table = "host"
-    columns = metadata.tables[table].columns
-    form = InsertForm(columns)
-    if form.validate_on_submit():
-        return render_template("insert.html", tables=metadata.sorted_tables, form=form)
-    return render_template("insert.html", tables=metadata.sorted_tables, form=form)
+    if 'change_table' in request.form :
+        selected_table = request.form.get("comp_select")
+        print(selected_table)
+        session['curr_table'] = selected_table
+        session['col_value'] = []
+        print(session['curr_table'], file=sys.stderr)
+        session['index'] = 0
+    if 'curr_table' in session :
+        selected_table = session['curr_table']
+        print('curr_table', file=sys.stderr)
+    else :
+        selected_table = "host"
+        session['col_value'] = []
+        session['index'] = 0
+        print("la table normale host", file=sys.stderr)
+    columns = metadata.tables[selected_table].columns
+    len_columns = len(columns)
+    index = session['index']
+    print("index = " + str(index), file=sys.stderr)
+        
+    if(len_columns == index):
+        insert_in_table(session['col_value'], selected_table)
+        form = InsertForm("fini")
+        return render_template("insert.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table)
+    # vraiment degueulasse, TODO trouver un meilleur moyen
+    i = 0
+    for c in columns:
+        if (i == index):
+            print(c.name, file=sys.stderr)
+            col_name = c.name
+            form = InsertForm(col_name)
+            value = form.value.data
+            print("value is " + str(value), file=sys.stderr)
+            session['col_value'] = session['col_value'] + [(col_name, value)]
+        i += 1   
 
+    if form.validate_on_submit() :
+        session['index'] += 1
+        print("index2 =" + str(session['index']), file=sys.stderr)
+        return render_template(
+        "insert.html",
+        tables=metadata.sorted_tables,
+        form=form,
+        selected_table=selected_table
+        )
+
+    return render_template("insert.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table)
 
 if __name__ == "__main__":
     app.run()

@@ -8,22 +8,31 @@
   <form class="form-inline" method="POST" action="{{ url_for('insert') }}">
     <div class="form-group">
       <div class="input-group">
-          <span class="input-group-addon">Table to insert :  </span>
-              <select name="comp_select" class="selectpicker form-control custom-select">
-                {% for element in tables %}
-                <option value="{{element}}" {% if element == selected_table %}selected{% endif %} >{{ element }}</option>
-                {% endfor %}
-              </select>
+        <span class="input-group-addon">Table : </span>
+        <select
+          name="comp_select"
+          class="selectpicker form-control custom-select"
+          id="select_table"
+        >
+          {% for element in tables %}
+          <option value="{{ element }}">{{ element }}</option>
+          {% endfor %}
+        </select>
       </div>
-      <button type="submit" class="btn btn-default">Go</button>
+      <input type="submit" class="btn btn-default" name="change_table" value="Change table !"></button>
     </div>
-</form>
-  <br>
+  </form>
+  <br />
   <form method="POST" action="/insert" class="form-group">
     {{ form.csrf_token }}
-    {{ form.select_col.label }} {{ form.select_col() }}
-    {{ form.query.label }} {{ form.query(size=100) }}
-    <input type="submit" class='btn btn-primary' value="Go">
-</form>
+    {{ form.value.label }}
+    {{ form.value(size=100) }}
+    <input type="submit" class="btn btn-primary" name="query" value="Go !"/>
+  </form>
+
+  <script>
+    var element = document.getElementById("select_table");
+    element.value = "{{selected_table}}";
+  </script>
 </main>
 {% endblock body %}
