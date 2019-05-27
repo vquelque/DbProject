@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, url_for, Session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData, Table, text
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.automap import automap_base
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField
+from wtforms import StringField, SubmitField, SelectField, IntegerField, DateField
 from wtforms.validators import DataRequired
+from flask import Flask
 
 # general configuration
 app = Flask(__name__)
@@ -11,31 +14,26 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = "super_secret"
 session = Session()
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = "oracle://C##DB2019_G43:DB2019_G43@cs322-db.epfl.ch:1521/ORCLCDB"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
 
-# database connection
-engine = create_engine(
-    "oracle://C##DB2019_G43:DB2019_G43@cs322-db.epfl.ch:1521/ORCLCDB"
-)
+engine = db.engine
+metadata = db.metadata
+sq_session = db.session
 connection = engine.connect()
-metadata = MetaData()
 metadata.reflect(bind=connection)
-# tables
-# address = Table('ADDRESS', metadata, autoload=True, autoload_with=engine)
-# bed_type = Table('BED_TYPE', metadata, autoload=True, autoload_with=engine)
-# calendar = Table('CALENDAR', metadata, autoload=True, autoload_with=engine)
-# cancellation_policy = Table('CANCELLATION_POLICY', metadata, autoload=True, autoload_with=engine)
-# city = Table('CITY', metadata, autoload=True, autoload_with=engine)
-# country = Table('COUNTRY', metadata, autoload=True, autoload_with=engine)
-# host = Table('HOST', metadata, autoload=True, autoload_with=engine)
-# host_reponse_time = Table('HOST_RESPONSE_TIME', metadata, autoload=True, autoload_with=engine)
-# neighbourhood = Table('NEIGHBOURHOOD', metadata, autoload=True, autoload_with=engine)
-# offer = Table('OFFER', metadata, autoload=True, autoload_with=engine)
-# prices = Table('PRICES', metadata, autoload=True, autoload_with=engine)
-# property = Table('PROPERTY', metadata, autoload=True, autoload_with=engine)
-# property_type = Table('PROPERTY_TYPE', metadata, autoload=True, autoload_with=engine)
-# review = Table('REVIEW', metadata, autoload=True, autoload_with=engine)
-# room_type = Table('ROOM_TYPE', metadata, autoload=True, autoload_with=engine)
-# scores = Table('SCORES', metadata, autoload=True, autoload_with=engine)
+
+Base = automap_base()
+Base.prepare(engine, reflect=True)
+City = Base.classes.city
+Property_type = Base.classes.property_type
+Offer = Base.classes.offer
+Host = Base.classes.host
+Property = Base.classes.property
+
 
 # db helper functions
 def dump_table(table_name):
@@ -48,10 +46,47 @@ def dump_table(table_name):
 
 
 def search_in_table(query, table_name, col_name):
-    sql_query = "SELECT * FROM {0} WHERE UPPER({1}) LIKE UPPER('%{2}%')".format(table_name,col_name,query)
+    sql_query = "SELECT * FROM {0} WHERE UPPER({1}) LIKE UPPER('%{2}%')".format(
+        table_name, col_name, query
+    )
     ResultProxy = connection.execute(sql_query)
     result = ResultProxy.fetchmany(10)
     return result
+
+
+def advance_search(
+    city, property_type, number_of_guests, available_from, available_to, price_max
+):
+    available_from = '2001-01-01' if not available_from else available_from
+    available_to = '2020-01-01' if not available_to else available_to
+    if number_of_guests :
+        guests = 'AND p.ACCOMMODATES = {}'.format(number_of_guests)
+    else :
+        guests =''
+    if price_max :
+        price = 'AND p.price <= {}'.format(price_max)
+    else :
+        price = ''
+
+    query_ = ("SELECT o.name, o.summary, o.description, p.price "
+        "FROM Offer o, Prices p "
+        "WHERE o.listing_id IN ("
+	        "SELECT p.listing_id "
+	        "FROM Property p, Property_type pt "
+            "WHERE (p.property_type_id = pt.property_type_id) {4} AND (pt.property_type = '{0}') AND p.property_id IN ( "
+		        "SELECT a.property_id "
+		        "FROM Address a, Neighbourhood n "
+		        "WHERE a.NEIGHBOURHOOD_ID = n.NEIGHBOURHOOD_ID AND n.CITY_ID IN ( "
+                    "SELECT c.CITY_ID "
+                    "FROM City c "
+                    "WHERE c.CITY = '{1}')"
+           ")) AND p.LISTING_ID=o.LISTING_ID {5} AND o.LISTING_ID IN ("
+           "SELECT c.listing_id "
+           "FROM Calendar c "
+           "WHERE c.DATE_ BETWEEN TO_DATE('{2}', 'YYYY-MM-DD') AND TO_DATE('{3}', 'YYYY-MM-DD') AND c.AVAILABLE='t')" ).format(property_type,city,available_from,available_to,guests,price)
+    print(query_)
+    ResultProxy = connection.execute(query_)
+    return ResultProxy.fetchmany(50)
 
 
 # search form
@@ -66,16 +101,44 @@ class SearchForm(FlaskForm):
             col_choices.append((col.name, col.name))
         self.select_col.choices = col_choices
 
-#insert form
+
+def str_to_tuples(str):
+    array = []
+    for s in str:
+        tu = (s.value, s.value)
+        array.append(tu)
+    return array
+
+
+# search form
+class SearchAdvancedForm(FlaskForm):
+    city = SelectField(
+        "City :",
+        choices=str_to_tuples(sq_session.query(City.city.label("value")).all()),
+    )
+    property_type = SelectField(
+        "Property type :",
+        choices=str_to_tuples(
+            sq_session.query(Property_type.property_type.label("value")).all()
+        ),
+    )
+    number_of_guests = IntegerField("Number of guests :")
+    available_from = DateField("Available from :", format="%m/%d/%Y")
+    available_to = DateField("Available to :", format="%m/%d/%Y")
+    price_max = IntegerField("Maximum price :")
+
+
+# insert form
 class InsertForm(FlaskForm):
-    select_col = SelectField('column to insert :')
-    query = StringField('insert query :', validators=[DataRequired()])
+    select_col = SelectField("column to insert :")
+    query = StringField("insert query :", validators=[DataRequired()])
+
     def __init__(self, columns, *args, **kwargs):
         super(InsertForm, self).__init__(*args, **kwargs)
         col_choices = []
-        for col in columns :
-            col_choices.append((col.name,col.name))
-        self.select_col.choices = col_choices       
+        for col in columns:
+            col_choices.append((col.name, col.name))
+        self.select_col.choices = col_choices
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -95,44 +158,84 @@ def get():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
-    if 'change_table' in request.form :
+    if "change_table" in request.form:
         selected_table = request.form.get("comp_select")
         print(selected_table)
-        session['curr_table'] = selected_table
-    if 'curr_table' in session :
-        selected_table = session['curr_table']
-    else :
+        session["curr_table"] = selected_table
+    if "curr_table" in session:
+        selected_table = session["curr_table"]
+    else:
         selected_table = "host"
     columns = metadata.tables[selected_table].columns
     form = SearchForm(columns)
-    query = form.query.data
-    col_name = form.select_col.data
-    print(query)
-    print(col_name)
-    print(selected_table)
-    if form.validate_on_submit() :
-        records = search_in_table(query,selected_table,col_name)
+    if form.validate_on_submit():
+        query = form.query.data
+        col_name = form.select_col.data
+        records = search_in_table(query, selected_table, col_name)
         return render_template(
+            "search.html",
+            tables=metadata.sorted_tables,
+            form=form,
+            columns=columns,
+            records=records,
+            selected_table=selected_table,
+        )
+    return render_template(
         "search.html",
         tables=metadata.sorted_tables,
         form=form,
+        selected_table=selected_table,
         columns=columns,
-        records=records, 
-        selected_table=selected_table
+    )
+
+
+@app.route("/advancedsearch", methods=["GET", "POST"])
+def adv_search():
+    form = SearchAdvancedForm()
+    city = form.city.data
+    property_type = form.property_type.data
+    number_of_guests = form.number_of_guests.data
+    available_from = form.available_from.data
+    available_to = form.available_to.data
+    price_max = form.price_max.data
+    if request.method == "POST":
+        records = advance_search(
+            city,
+            property_type,
+            number_of_guests,
+            available_from,
+            available_to,
+            price_max,
         )
-    return render_template("search.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table,columns=columns)
+        return render_template(
+            "adv_search.html",
+            form=form,
+            columns=[
+                "name",
+                "summary",
+                "description",
+                "price",
+            ],
+            records=records,
+        )
+    return render_template(
+        "adv_search.html",
+        form=form,
+        columns=["name", "summary", "description","price"],
+    )
 
 
-@app.route('/insert', methods=['GET', 'POST'])
+@app.route("/insert", methods=["GET", "POST"])
 def insert():
-    table = request.form.get('comp_select')
-    if table == None :
-        table = 'host'
+    table = request.form.get("comp_select")
+    if table == None:
+        table = "host"
     columns = metadata.tables[table].columns
     form = InsertForm(columns)
     if form.validate_on_submit():
-        return render_template('insert.html', tables = metadata.sorted_tables,form=form)
-    return render_template('insert.html', tables = metadata.sorted_tables, form=form)
+        return render_template("insert.html", tables=metadata.sorted_tables, form=form)
+    return render_template("insert.html", tables=metadata.sorted_tables, form=form)
+
 
 if __name__ == "__main__":
     app.run()
