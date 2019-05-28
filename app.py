@@ -174,7 +174,7 @@ class InsertForm(FlaskForm):
     min_nights = IntegerField(
         label = "Minimum number of nights :",
         validators=[DataRequired()])
-    submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
+    #submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
 
 class DeleteForm(FlaskForm):
     select_col = SelectField("column :")
@@ -275,15 +275,13 @@ def adv_search():
 def insert():
 
     form = InsertForm()
-    print("Hello 1", file=sys.stderr)
-
-    if form.validate_on_submit() :
-        print("Hello 2", file=sys.stderr)
-        listing_id = np.random.random_integers(1000000000, 2000000000)
-        host_id = np.random.random_integers(10000000, 20000000)
+    if request.method == "POST":
+        listing_id = np.random.randint(1000000000, 2000000000)
+        host_id = np.random.randint(10000000, 20000000)
 
         col_value = []
         col_value = col_value + [("host_id",host_id)]
+        col_value= col_value + [("host_name", form.host_name.data)]
         insert_in_table(col_value, "Host")
 
         col_value = []
@@ -291,10 +289,8 @@ def insert():
         col_value = col_value + [("host_id",host_id)]
         col_value = col_value + [("name",form.name.data)]
         col_value = col_value + [("description", form.description.data)]
-        col_value = col_value + [("host_name", form.host_name.data)]
         col_value = col_value + [("cancelation_policy_id",form.cancelation_policy_id.data)]
         col_value = col_value +[("min_nights",form.min_nights.data)]
-        print("value is " + col_value, file=sys.stderr)
         insert_in_table(col_value, "Offer")
         
         render_template("insert.html", form=form)
@@ -305,7 +301,6 @@ def insert():
 def delete():
     if "change_table" in request.form:
         selected_table = request.form.get("comp_select")
-        print(selected_table)
         session["curr_table"] = selected_table
     if "curr_table" in session:
         selected_table = session["curr_table"]

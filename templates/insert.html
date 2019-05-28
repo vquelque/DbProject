@@ -10,11 +10,15 @@
   <form class="text-center" method=post>
     <div class="form-group">
   {{ forms.quick_form(form) }}
+  <input type="submit" class="btn btn-success" name="query" value="Insert" onclick="correct_insert()"/>
   </form>
 
   <script>
     var element = document.getElementById("select_table");
     element.value = "{{selected_table}}";
+    function correct_insert() {
+      alert("You have successfully insert into the Database !");
+    }
   </script>
 </main>
 {% endblock body %}
