@@ -1,4 +1,4 @@
-{% set active_page = "basic_search" %}
+{% set active_page = "delete" %}
 {% extends 'layout.html' %} 
 {% block body %}
 <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
@@ -37,7 +37,5 @@
     element.value = "{{selected_table}}";
   </script>
 
-<h2>Query results :</h2>
-  {% include "includes/_table.html" %}
 </main>
 {% endblock body %}

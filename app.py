@@ -1,6 +1,7 @@
 from __future__ import print_function  # In python 2.7
 import sys
-from flask import Flask, render_template, request, url_for, Session
+import numpy as np
+from flask import Flask, flash, render_template, request, url_for, Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, MetaData, Table, text
 from sqlalchemy.orm import sessionmaker
@@ -155,10 +156,25 @@ class SearchAdvancedForm(FlaskForm):
 
 # insert form
 class InsertForm(FlaskForm):
-    value = StringField(validators=[DataRequired()])
-    def __init__(self, col_name, *args, **kwargs):
-        super(InsertForm, self).__init__(*args, **kwargs)
-        self.value.label = col_name      
+    name = StringField(
+        label = "Name :",
+        validators=[DataRequired()])
+    description = StringField(
+        label = "Description :",
+        validators=[DataRequired()])
+    host_name = StringField(
+        label = "Host name :",
+        validators=[DataRequired()])
+    cancelation_policy_id = SelectField(
+        label = "Cancelation Policy :",
+        choices = [(0, "flexible"),(2, "moderate"),
+                (5,"strict"),(1,"strict with grace period"),
+                (3,"super strict 30"),(4,"super strict 60")],
+        validators=[DataRequired()])
+    min_nights = IntegerField(
+        label = "Minimum number of nights :",
+        validators=[DataRequired()])
+    submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
 
 class DeleteForm(FlaskForm):
     select_col = SelectField("column :")
@@ -257,53 +273,33 @@ def adv_search():
 
 @app.route("/insert", methods=["GET", "POST"])
 def insert():
-    if 'change_table' in request.form :
-        selected_table = request.form.get("comp_select")
-        print(selected_table)
-        session['curr_table'] = selected_table
-        session['col_value'] = []
-        print(session['curr_table'], file=sys.stderr)
-        session['index'] = 0
-    if 'curr_table' in session :
-        selected_table = session['curr_table']
-        print('curr_table', file=sys.stderr)
-    else :
-        selected_table = "host"
-        session['col_value'] = []
-        session['index'] = 0
-        print("la table normale host", file=sys.stderr)
-    columns = metadata.tables[selected_table].columns
-    len_columns = len(columns)
-    index = session['index']
-    print("index = " + str(index), file=sys.stderr)
-        
-    if(len_columns == index):
-        insert_in_table(session['col_value'], selected_table)
-        form = InsertForm("fini")
-        return render_template("insert.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table)
-    # vraiment degueulasse, TODO trouver un meilleur moyen
-    i = 0
-    for c in columns:
-        if (i == index):
-            print(c.name, file=sys.stderr)
-            col_name = c.name
-            form = InsertForm(col_name)
-            value = form.value.data
-            print("value is " + str(value), file=sys.stderr)
-            session['col_value'] = session['col_value'] + [(col_name, value)]
-        i += 1   
+
+    form = InsertForm()
+    print("Hello 1", file=sys.stderr)
 
     if form.validate_on_submit() :
-        session['index'] += 1
-        print("index2 =" + str(session['index']), file=sys.stderr)
-        return render_template(
-        "insert.html",
-        tables=metadata.sorted_tables,
-        form=form,
-        selected_table=selected_table
-        )
+        print("Hello 2", file=sys.stderr)
+        listing_id = np.random.random_integers(1000000000, 2000000000)
+        host_id = np.random.random_integers(10000000, 20000000)
 
-    return render_template("insert.html", tables=metadata.sorted_tables, form=form, selected_table=selected_table)
+        col_value = []
+        col_value = col_value + [("host_id",host_id)]
+        insert_in_table(col_value, "Host")
+
+        col_value = []
+        col_value = col_value + [("listing_id",listing_id)]
+        col_value = col_value + [("host_id",host_id)]
+        col_value = col_value + [("name",form.name.data)]
+        col_value = col_value + [("description", form.description.data)]
+        col_value = col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("cancelation_policy_id",form.cancelation_policy_id.data)]
+        col_value = col_value +[("min_nights",form.min_nights.data)]
+        print("value is " + col_value, file=sys.stderr)
+        insert_in_table(col_value, "Offer")
+        
+        render_template("insert.html", form=form)
+        
+    return render_template("insert.html", form=form)
 
 @app.route("/delete", methods=["GET", "POST"])
 def delete():
