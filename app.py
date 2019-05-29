@@ -67,10 +67,10 @@ def insert_in_table(col_value, table_name):
     s = "VALUES ("
     for (c,v) in col_value:
         sql_query = sql_query + "{0}, ".format(c)
-        s = s + "{0}, ".format(v)
+        s = s + "'{0}', ".format(v)
     sql_query = sql_query[:-2] + ") " + s[:-2] + ")"
     print(sql_query, file=sys.stderr)
-    #ResultProxy = connection.execute(sql_query)
+    connection.execute(sql_query)
     # result ?
 
 def delete_in_table(name, table_name, col_name):
@@ -80,7 +80,7 @@ def delete_in_table(name, table_name, col_name):
         table_name, col_name, name
     )
     print(sql_query, file=sys.stderr)
-    # ResultProxy = connection.execute(sql_query)
+    connection.execute(sql_query)
     # result ?
 
 def advance_search(
@@ -162,27 +162,30 @@ class SearchAdvancedForm(FlaskForm):
     available_to = DateField("Available to :", format="%m/%d/%Y")
     price_max = IntegerField("Maximum price :")
 
-
 # insert form
 class InsertForm(FlaskForm):
+    host_name = StringField(
+        label = "Host name :",
+        validators=[DataRequired()])
+    host_about = StringField(
+        label = "Host about :",
+        validators=[DataRequired()])
     name = StringField(
         label = "Name :",
         validators=[DataRequired()])
     description = StringField(
         label = "Description :",
         validators=[DataRequired()])
-    host_name = StringField(
-        label = "Host name :",
-        validators=[DataRequired()])
-    cancelation_policy_id = SelectField(
-        label = "Cancelation Policy :",
+    cancellation_policy_id = SelectField(
+        label = "Cancellation Policy :",
         choices = [(0, "flexible"),(2, "moderate"),
                 (5,"strict"),(1,"strict with grace period"),
                 (3,"super strict 30"),(4,"super strict 60")],
         validators=[DataRequired()])
     min_nights = IntegerField(
         label = "Minimum number of nights :",
-        validators=[DataRequired()])
+        validators=[DataRequired(message='Please enter an integer')])
+    
     #submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
 
 class DeleteForm(FlaskForm):
@@ -295,7 +298,8 @@ def insert():
 
         col_value = []
         col_value = col_value + [("host_id",host_id)]
-        col_value= col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_about", form.host_about.data)]
         insert_in_table(col_value, "Host")
 
         col_value = []
@@ -303,8 +307,8 @@ def insert():
         col_value = col_value + [("host_id",host_id)]
         col_value = col_value + [("name",form.name.data)]
         col_value = col_value + [("description", form.description.data)]
-        col_value = col_value + [("cancelation_policy_id",form.cancelation_policy_id.data)]
-        col_value = col_value +[("min_nights",form.min_nights.data)]
+        col_value = col_value + [("cancellation_policy_id ",form.cancellation_policy_id.data)]
+        col_value = col_value + [("minimum_nights",form.min_nights.data)]
         insert_in_table(col_value, "Offer")
         
         render_template("insert.html", form=form)
