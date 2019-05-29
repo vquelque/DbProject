@@ -187,6 +187,11 @@ class DeleteForm(FlaskForm):
             col_choices.append((col.name, col.name))
         self.select_col.choices = col_choices
 
+#query form
+class QueryForm(FlaskForm) :
+    select_deliverable = SelectField("Select deliverable :", choices=[('2','Deliverable 2'),('3','Deliverable 3')])
+    select_query = SelectField("Select query :", choices=[])
+
 @app.route("/", methods=["GET", "POST"])
 def get():
     table = request.form.get("comp_select")
@@ -327,6 +332,14 @@ def delete():
         selected_table=selected_table,
         columns=columns,
     )
+
+@app.route('/query', methods=["GET","POST"])
+def query() :
+    form = QueryForm()
+    if form.validate_on_submit() :
+        if request.form['btn'] == 'Ok' :
+            return render_template('query.html', form=form)
+    return render_template('query.html', form=form)
 
 if __name__ == "__main__":
     app.run()
