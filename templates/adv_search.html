@@ -9,13 +9,13 @@
   </div>
   <form action="/advancedsearch" method="post" class="form-group">
   {{ form.csrf_token }}
-  {{ form.city.label }} {{ form.city(class_='form-control') }} 
-  {{ form.property_type.label }} {{ form.property_type(class_='form-control') }} 
+  {{ form.city.label }} {{ form.city(class_='form-control custom-select') }} 
+  {{ form.property_type.label }} {{ form.property_type(class_='form-control custom-select') }} 
   {{ form.number_of_guests.label }} {{ form.number_of_guests(class_='form-control') }} 
   {{ form.available_from.label }} {{ form.available_from(class_='form-control') }} 
   {{ form.available_to.label }} {{ form.available_to(class_='form-control') }} 
   {{ form.price_max.label }} {{ form.price_max(class_='form-control') }} 
-  <input type="submit" class="btn btn-primary" value="Search !"/>
+  <input type="submit" class="btn btn-block btn-outline-success mt-4" value="Search !"/>
   </form>
   
   <script type="text/javascript">

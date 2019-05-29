@@ -10,6 +10,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, IntegerField, DateField
 from wtforms.validators import DataRequired
 from flask import Flask
+from queries import queries
 
 # general configuration
 app = Flask(__name__)
@@ -36,6 +37,8 @@ Property_type = Base.classes.property_type
 Offer = Base.classes.offer
 Host = Base.classes.host
 Property = Base.classes.property
+
+queries = queries()
 
 
 # db helper functions
@@ -64,10 +67,10 @@ def insert_in_table(col_value, table_name):
     s = "VALUES ("
     for (c,v) in col_value:
         sql_query = sql_query + "{0}, ".format(c)
-        s = s + "{0}, ".format(v)
+        s = s + "'{0}', ".format(v)
     sql_query = sql_query[:-2] + ") " + s[:-2] + ")"
     print(sql_query, file=sys.stderr)
-    #ResultProxy = connection.execute(sql_query)
+    connection.execute(sql_query)
     # result ?
 
 def delete_in_table(name, table_name, col_name):
@@ -77,7 +80,7 @@ def delete_in_table(name, table_name, col_name):
         table_name, col_name, name
     )
     print(sql_query, file=sys.stderr)
-    # ResultProxy = connection.execute(sql_query)
+    connection.execute(sql_query)
     # result ?
 
 def advance_search(
@@ -114,6 +117,12 @@ def advance_search(
     ResultProxy = connection.execute(query_)
     return ResultProxy.fetchmany(50)
 
+ #launch query
+def launch_query(query) :
+    ResultProxy = connection.execute(query)
+    description_tuple = ResultProxy.cursor.description
+    columns = [k[0] for k in description_tuple]
+    return (columns,ResultProxy.fetchmany(50))
 
 # search form
 class SearchForm(FlaskForm):
@@ -136,7 +145,7 @@ def str_to_tuples(str):
     return array
 
 
-# search form
+# search advanced form
 class SearchAdvancedForm(FlaskForm):
     city = SelectField(
         "City :",
@@ -153,27 +162,30 @@ class SearchAdvancedForm(FlaskForm):
     available_to = DateField("Available to :", format="%m/%d/%Y")
     price_max = IntegerField("Maximum price :")
 
-
 # insert form
 class InsertForm(FlaskForm):
+    host_name = StringField(
+        label = "Host name :",
+        validators=[DataRequired()])
+    host_about = StringField(
+        label = "Host about :",
+        validators=[DataRequired()])
     name = StringField(
         label = "Name :",
         validators=[DataRequired()])
     description = StringField(
         label = "Description :",
         validators=[DataRequired()])
-    host_name = StringField(
-        label = "Host name :",
-        validators=[DataRequired()])
-    cancelation_policy_id = SelectField(
-        label = "Cancelation Policy :",
+    cancellation_policy_id = SelectField(
+        label = "Cancellation Policy :",
         choices = [(0, "flexible"),(2, "moderate"),
                 (5,"strict"),(1,"strict with grace period"),
                 (3,"super strict 30"),(4,"super strict 60")],
         validators=[DataRequired()])
     min_nights = IntegerField(
         label = "Minimum number of nights :",
-        validators=[DataRequired()])
+        validators=[DataRequired(message='Please enter an integer')])
+    
     #submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
 
 class DeleteForm(FlaskForm):
@@ -189,8 +201,8 @@ class DeleteForm(FlaskForm):
 
 #query form
 class QueryForm(FlaskForm) :
-    select_deliverable = SelectField("Select deliverable :", choices=[('2','Deliverable 2'),('3','Deliverable 3')])
-    select_query = SelectField("Select query :", choices=[])
+    select_query = SelectField("Select query :", choices=[(q['id'],q['name']) for q in queries])
+    sumbit = SubmitField("Launch Query !")
 
 @app.route("/", methods=["GET", "POST"])
 def get():
@@ -286,7 +298,8 @@ def insert():
 
         col_value = []
         col_value = col_value + [("host_id",host_id)]
-        col_value= col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_about", form.host_about.data)]
         insert_in_table(col_value, "Host")
 
         col_value = []
@@ -294,8 +307,8 @@ def insert():
         col_value = col_value + [("host_id",host_id)]
         col_value = col_value + [("name",form.name.data)]
         col_value = col_value + [("description", form.description.data)]
-        col_value = col_value + [("cancelation_policy_id",form.cancelation_policy_id.data)]
-        col_value = col_value +[("min_nights",form.min_nights.data)]
+        col_value = col_value + [("cancellation_policy_id ",form.cancellation_policy_id.data)]
+        col_value = col_value + [("minimum_nights",form.min_nights.data)]
         insert_in_table(col_value, "Offer")
         
         render_template("insert.html", form=form)
@@ -336,10 +349,13 @@ def delete():
 @app.route('/query', methods=["GET","POST"])
 def query() :
     form = QueryForm()
-    if form.validate_on_submit() :
-        if request.form['btn'] == 'Ok' :
-            return render_template('query.html', form=form)
-    return render_template('query.html', form=form)
+    query = queries[0]['query']
+    if form.is_submitted() :
+        query_index = int(form.select_query.data) - 1
+        query = queries[query_index]
+        columns, records = launch_query(query['query'])
+        return render_template('query.html', form=form, columns=columns,records=records,query=query)
+    return render_template('query.html', form=form, query=query)
 
 if __name__ == "__main__":
     app.run()

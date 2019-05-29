@@ -8,21 +8,7 @@
     <h1 class="h2">Search in table</h2>
   </div>
   <form class="form-inline" method="POST" action="{{ url_for('search') }}">
-    <div class="form-group">
-      <div class="input-group">
-        <span class="input-group-addon">Table : </span>
-        <select
-          name="comp_select"
-          class="selectpicker form-control custom-select"
-          id="select_table"
-        >
-          {% for element in tables %}
-          <option value="{{ element }}">{{ element }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <input type="submit" class="btn btn-primary" name="change_table" value="Change table !"></button>
-    </div>
+    {% include 'includes/_select_table.html' %}
   </form>
   <br />
   <form method="POST" action="/search" class="form-group">
