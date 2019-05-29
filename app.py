@@ -153,17 +153,19 @@ class SearchAdvancedForm(FlaskForm):
     available_to = DateField("Available to :", format="%m/%d/%Y")
     price_max = IntegerField("Maximum price :")
 
-
 # insert form
 class InsertForm(FlaskForm):
+    host_name = StringField(
+        label = "Host name :",
+        validators=[DataRequired()])
+    host_about = StringField(
+        label = "Host about :",
+        validators=[DataRequired()])
     name = StringField(
         label = "Name :",
         validators=[DataRequired()])
     description = StringField(
         label = "Description :",
-        validators=[DataRequired()])
-    host_name = StringField(
-        label = "Host name :",
         validators=[DataRequired()])
     cancellation_policy_id = SelectField(
         label = "Cancellation Policy :",
@@ -173,7 +175,8 @@ class InsertForm(FlaskForm):
         validators=[DataRequired()])
     min_nights = IntegerField(
         label = "Minimum number of nights :",
-        validators=[DataRequired()])
+        validators=[DataRequired(message='Please enter an integer')])
+    
     #submit = SubmitField("Insert",render_kw={"class": "btn btn-success"})
 
 class DeleteForm(FlaskForm):
@@ -286,7 +289,8 @@ def insert():
 
         col_value = []
         col_value = col_value + [("host_id",host_id)]
-        col_value= col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_name", form.host_name.data)]
+        col_value = col_value + [("host_about", form.host_about.data)]
         insert_in_table(col_value, "Host")
 
         col_value = []
@@ -295,7 +299,7 @@ def insert():
         col_value = col_value + [("name",form.name.data)]
         col_value = col_value + [("description", form.description.data)]
         col_value = col_value + [("cancellation_policy_id ",form.cancellation_policy_id.data)]
-        col_value = col_value +[("minimum_nights",form.min_nights.data)]
+        col_value = col_value + [("minimum_nights",form.min_nights.data)]
         insert_in_table(col_value, "Offer")
         
         render_template("insert.html", form=form)
