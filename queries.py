@@ -342,7 +342,7 @@ def queries():
                         "WHERE (h.HOST_ID = o.HOST_ID) AND (o.LISTING_ID = r.LISTING_ID) "
                         "GROUP BY o.HOST_ID, o.LISTING_ID, h.HOST_NAME "
                     ") dmp "
-                ") rk_tab WHERE rk <= 3" "
+                ") rk_tab WHERE rk <= 3 "
         },
         {
         "id": 17,
