@@ -1,38 +1,24 @@
+{% set active_page = "insert" %}
+{% import 'includes/_form.html' as forms %}
 {% extends 'layout.html' %} {% block body %}
 <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
   <div
     class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
   >
-    <h1 class="h1">Insert</h1>
+    <h1 class="h1">Insert a listing:</h1>
   </div>
-  <form class="form-inline" method="POST" action="{{ url_for('insert') }}">
+  <form class="text-center" method=post>
     <div class="form-group">
-      <div class="input-group">
-        <span class="input-group-addon">Table : </span>
-        <select
-          name="comp_select"
-          class="selectpicker form-control custom-select"
-          id="select_table"
-        >
-          {% for element in tables %}
-          <option value="{{ element }}">{{ element }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <input type="submit" class="btn btn-default" name="change_table" value="Change table !"></button>
-    </div>
-  </form>
-  <br />
-  <form method="POST" action="/insert" class="form-group">
-    {{ form.csrf_token }}
-    {{ form.value.label }}
-    {{ form.value(size=100) }}
-    <input type="submit" class="btn btn-primary" name="query" value="Go !"/>
+  {{ forms.quick_form(form) }}
+  <input type="submit" class="btn btn-success" name="query" value="Insert" onclick="correct_insert()"/>
   </form>
 
   <script>
     var element = document.getElementById("select_table");
     element.value = "{{selected_table}}";
+    function correct_insert() {
+      alert("You have successfully insert into the Database !");
+    }
   </script>
 </main>
 {% endblock body %}

@@ -1,0 +1,37 @@
+{% macro form_group(field) -%}
+<div class="form-group required">
+  {% if field.errors %}
+  {{ field(class_="form-control is-invalid") }}
+  {% else %}
+  {{ field(class_="form-control") }}
+  {% endif %} {% if field.errors %}
+  <div class="invalid-feedback">
+    {{ field.errors[0] }}
+  </div>
+  {% endif %}
+</div>
+{% endmacro %} {% macro quick_form(form) -%}
+<form class="form" method="POST">
+  {% for field in form %}
+  {% if field.type in ('HiddenField', 'CSRFTokenField') %}
+  {{ field() }}
+  {% elif field.type == 'SubmitField' %}
+  {{ field(class_="btn btn-primary mb-2") }}
+  {% elif field.type == 'RadioField' %}
+  <dt>{{ field.label }}</dt>
+  {% for subfield in field %}
+    <tr>
+        <td>{{ subfield }}</td>
+        <td>{{ subfield.label }}</td>
+    </tr>
+  {% endfor %}
+  <br>
+  {% elif field.type == 'SelectField' %}
+  <dt>{{ field.label }}</dt>
+  {{ field(class_="custom-select mb-2") }}
+  {% else %}
+  <dt>{{ field.label }}</dt>
+  {{ form_group(field) }}
+  {% endif %} {% endfor %}
+</form>
+{% endmacro %}
