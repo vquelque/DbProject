@@ -4,42 +4,42 @@ def queries():
         "id": 1,
         "name": "Assigment1-Q1",
         "text":"Find the average price for a listing with 8 bedrooms.",
-        "query":"SELECT AVG(price.price)"
-                "FROM Prices price"
-                "WHERE price.listing_id IN ("
-                "    SELECT property.listing_id"
-                "    FROM Property property"
-                "    WHERE property.bedrooms = 8"
-                ");"
+        "query":"SELECT AVG(price.price) "
+                "FROM Prices price "
+                "WHERE price.listing_id IN ( "
+                "    SELECT property.listing_id "
+                "    FROM Property property "
+                "    WHERE property.bedrooms = 8 "
+                ")"
 
         },
         {
         "id": 2,
         "name": "Assigment1-Q2",
-        "text":"Find the average cleaning review score for listings with TV.",
-        "query":"SELECT AVG(s.review_scores_cleanliness)"
-                "FROM Scores s, Property p"
-                "WHERE (p.listing_id = s.listing_id) AND p.PROPERTY_ID IN ("
-                "    SELECT h.PROPERTY_ID"
-                "    FROM HAS_AMENITIES h, AMENITY a"
-                "    WHERE (h.AMENITY_ID = a.AMENITY_ID) AND (a.AMENITY = 'TV')"
-                ");"
+        "text":"Find the average cleaning review score for listings with TV. ",
+        "query":"SELECT AVG(s.review_scores_cleanliness) "
+                "FROM Scores s, Property p "
+                "WHERE (p.listing_id = s.listing_id) AND p.PROPERTY_ID IN ( "
+                "    SELECT h.PROPERTY_ID "
+                "    FROM HAS_AMENITIES h, AMENITY a "
+                "    WHERE (h.AMENITY_ID = a.AMENITY_ID) AND (a.AMENITY = 'TV') "
+                ") "
         },
         {
         "id": 3,
         "name": "Assigment1-Q3",
         "text":"Print all the hosts who have an available property between date 03.2019 and 09.2019.",
-        "query":"SELECT DISTINCT h.HOST_ID, h.HOST_NAME"
-                "FROM HOST h"
-                "WHERE h.HOST_ID IN ("
-                "	SELECT o.HOST_ID"
-                "    FROM OFFER o"
-                "    WHERE o.LISTING_ID IN ("
-                "        SELECT c.LISTING_ID"
-                "        FROM CALENDAR c"
-                "        WHERE c.DATE_ >= TO_DATE('2019-03-01','YYYY-MM-DD') AND c.DATE_ <= TO_DATE('2019-09-01', 'YYYY-MM-DD') AND (c.AVAILABLE = 't')"
-                "    )"
-                ");"
+        "query":"SELECT DISTINCT h.HOST_ID, h.HOST_NAME "
+                "FROM HOST h "
+                "WHERE h.HOST_ID IN ( "
+                "	SELECT o.HOST_ID "
+                "    FROM OFFER o "
+                "    WHERE o.LISTING_ID IN ( "
+                "        SELECT c.LISTING_ID "
+                "        FROM CALENDAR c "
+                "        WHERE c.DATE_ >= TO_DATE('2019-03-01','YYYY-MM-DD') AND c.DATE_ <= TO_DATE('2019-09-01', 'YYYY-MM-DD') AND (c.AVAILABLE = 't') "
+                "    ) "
+                ")"
         },
         {
         "id": 4,
@@ -63,7 +63,7 @@ def queries():
                     "SELECT o.LISTING_ID"
                     "FROM OFFER o, HOST h"
                     "WHERE (o.HOST_ID = h.HOST_ID) AND (h.HOST_NAME = 'Viajes Eco')"
-                );"
+                ");"
         },
         {
         "id": 6,

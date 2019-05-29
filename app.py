@@ -10,6 +10,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField, IntegerField, DateField
 from wtforms.validators import DataRequired
 from flask import Flask
+from queries import queries
 
 # general configuration
 app = Flask(__name__)
@@ -36,6 +37,8 @@ Property_type = Base.classes.property_type
 Offer = Base.classes.offer
 Host = Base.classes.host
 Property = Base.classes.property
+
+queries = queries()
 
 
 # db helper functions
@@ -114,6 +117,12 @@ def advance_search(
     ResultProxy = connection.execute(query_)
     return ResultProxy.fetchmany(50)
 
+ #launch query
+def launch_query(query) :
+    ResultProxy = connection.execute(query)
+    description_tuple = ResultProxy.cursor.description
+    columns = [k[0] for k in description_tuple]
+    return (columns,ResultProxy.fetchmany(50))
 
 # search form
 class SearchForm(FlaskForm):
@@ -136,7 +145,7 @@ def str_to_tuples(str):
     return array
 
 
-# search form
+# search advanced form
 class SearchAdvancedForm(FlaskForm):
     city = SelectField(
         "City :",
@@ -189,8 +198,8 @@ class DeleteForm(FlaskForm):
 
 #query form
 class QueryForm(FlaskForm) :
-    select_deliverable = SelectField("Select deliverable :", choices=[('2','Deliverable 2'),('3','Deliverable 3')])
-    select_query = SelectField("Select query :", choices=[])
+    select_query = SelectField("Select query :", choices=[(q['id'],q['name']) for q in queries])
+    sumbit = SubmitField("Launch Query !")
 
 @app.route("/", methods=["GET", "POST"])
 def get():
@@ -336,10 +345,13 @@ def delete():
 @app.route('/query', methods=["GET","POST"])
 def query() :
     form = QueryForm()
-    if form.validate_on_submit() :
-        if request.form['btn'] == 'Ok' :
-            return render_template('query.html', form=form)
-    return render_template('query.html', form=form)
+    query = queries[0]['query']
+    if form.is_submitted() :
+        query_index = int(form.select_query.data) - 1
+        query = queries[query_index]
+        columns, records = launch_query(query['query'])
+        return render_template('query.html', form=form, columns=columns,records=records,query=query)
+    return render_template('query.html', form=form, query=query)
 
 if __name__ == "__main__":
     app.run()

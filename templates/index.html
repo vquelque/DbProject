@@ -9,7 +9,9 @@
         <h1 class="h1">Tables</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group mr-2">
-            {% include 'includes/_select_table.html' %}
+            <form class="form-inline" method="POST" action="{{ url_for('get') }}">
+              {% include 'includes/_select_table.html' %}
+              </form>
           </div>
         </div>
       </div>
