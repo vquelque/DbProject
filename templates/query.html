@@ -1,0 +1,23 @@
+{% set active_page = "queries" %}
+{% extends 'layout.html' %} 
+{% block body %}
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div
+      class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+    >
+            <form action="\query" method="post" class="form-group">
+            <div class="form-inline">
+                <div class="form-group mb-2">
+                {{form.select_deliverable.label}}{{form.select_deliverable(class_='form-control')}}
+                </div>
+                <input type="submit" name="btn" value="Ok" class="btn btn-primary mb-2">
+            </div>
+            <div class="form-inline form-group mb-2">
+                {{form.select_deliverable.label}}{{form.select_query(class_='form-control')}}
+                <input type="submit" name="btn" value="Launch query !" class="btn btn-primary">
+            </div>
+            </form>
+
+  </div>
+</main>
+{% endblock body %}
