@@ -1,0 +1,43 @@
+{% set active_page = "parameterized_query" %} {% extends 'layout.html' %} {% block body %}
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+
+  <h3>{{query1['name']}}</h3>
+    <p>{{query1['text']}}</p>
+
+    <form action="\parameterizedquery" method="post" class="form-inline">
+        <div class="form-group m-2">
+          {{form1.score.label(class_='m-2')}}
+          {{form1.score(class_='form-control custom-select')}}
+          {{form1.amenity.label(class_='m-2')}}
+          {{form1.amenity(class_='form-control custom-select')}}
+        </div>
+        <div class="form-group">
+          <input type="submit" name="btn" class="btn btn-primary" value="launch query 1"/>
+        </div> 
+      </div>
+    </form>
+
+    <h3>{{query2['name']}}</h3>
+    <p>{{query2['text']}}</p>
+
+    <form action="\parameterizedquery" method="post" class="form-inline">
+        <div class="form-group m-2">
+          {{form2.country.label(class_='m-2')}}
+          {{form2.country(class_='form-control custom-select')}}
+        </div>
+        <div class="form-group">
+          <input type="submit" name="btn" class="btn btn-primary" value="launch query 2"/>
+        </div> 
+      </div>
+    </form>
+
+    <hr>
+    
+    <h2>Query results</h2>
+      {% include "includes/_table.html" %}
+  </div>
+</main>
+{% endblock body %}

@@ -11,6 +11,7 @@ from wtforms import StringField, SubmitField, SelectField, IntegerField, DateFie
 from wtforms.validators import DataRequired
 from flask import Flask
 from queries import queries
+from queries import para_queries
 
 # general configuration
 app = Flask(__name__)
@@ -39,6 +40,7 @@ Host = Base.classes.host
 Property = Base.classes.property
 
 queries = queries()
+para_queries = para_queries()
 
 
 # db helper functions
@@ -122,7 +124,7 @@ def launch_query(query) :
     ResultProxy = connection.execute(query)
     description_tuple = ResultProxy.cursor.description
     columns = [k[0] for k in description_tuple]
-    return (columns,ResultProxy.fetchmany(50))
+    return (columns,ResultProxy.fetchall())
 
 # search form
 class SearchForm(FlaskForm):
@@ -202,6 +204,17 @@ class DeleteForm(FlaskForm):
 #query form
 class QueryForm(FlaskForm) :
     select_query = SelectField("Select query :", choices=[(q['id'],q['name']) for q in queries])
+    sumbit = SubmitField("Launch Query !")
+
+class ParaQueryForm1(FlaskForm):
+    score = SelectField("Select score: ", choices=[("review_scores_communication","review scores communication"),
+                                                    ("review_scores_rating","review scores rating"),
+                                                    ("review_scores_cleanliness","review scores cleanliness")])
+    amenity = SelectField("Select amenity: ", choices=[("TV","TV"),("WIFI","WIFI")])
+    sumbit = SubmitField("Launch Query !")
+
+class ParaQueryForm2(FlaskForm):
+    country = SelectField("Select country: ", choices=[("Spain","Spain"),("Germany","Germany")])
     sumbit = SubmitField("Launch Query !")
 
 @app.route("/", methods=["GET", "POST"])
@@ -356,6 +369,38 @@ def query() :
         columns, records = launch_query(query['query'])
         return render_template('query.html', form=form, columns=columns,records=records,query=query)
     return render_template('query.html', form=form, query=query)
+
+@app.route('/parameterizedquery', methods=["GET","POST"])
+def para_query():
+    form1 = ParaQueryForm1()
+    form2 = ParaQueryForm2()
+    query1 = para_queries[0]
+    query2 = para_queries[1]
+    if request.method == 'POST':
+        if request.form['btn'] == 'launch query 1':
+            query1['query'] = query1['query'].replace("TV", form1.amenity.data)
+            query1['query'] = query1['query'].replace("WIFI", form1.amenity.data)
+            query1['query'] = query1['query'].replace("review_scores_cleanliness", form1.score.data)
+            query1['query'] = query1['query'].replace("review_scores_rating", form1.score.data)
+            query1['query'] = query1['query'].replace("review_scores_communication", form1.score.data)
+            query1['text'] = query1['text'].replace("TV", form1.amenity.data)
+            query1['text'] = query1['text'].replace("WIFI", form1.amenity.data)
+            query1['text'] = query1['text'].replace("review_scores_cleanliness", form1.score.data)
+            query1['text'] = query1['text'].replace("cleaning review score", form1.score.data)
+            query1['text'] = query1['text'].replace("review_scores_rating", form1.score.data)
+            query1['text'] = query1['text'].replace("review_scores_communication", form1.score.data)
+            columns, records = launch_query(query1['query'])
+            return render_template('para_query.html', form1=form1, form2=form2, columns=columns,records=records,query1=query1, query2=query2)
+        else:
+            query2['query'] = query2['query'].replace("Spain", form2.country.data)
+            query2['query'] = query2['query'].replace("Germany", form2.country.data)
+            query2['text'] = query2['text'].replace("Spain", form2.country.data)
+            query2['text'] = query2['text'].replace("Germany", form2.country.data)
+            print(query2['query'], file=sys.stderr)
+            columns, records = launch_query(query2['query'])
+            return render_template('para_query.html', form1=form1, form2=form2, columns=columns,records=records,query1=query1, query2=query2)
+        
+    return render_template('para_query.html', form1=form1, form2=form2, query1=query1, query2=query2)
 
 if __name__ == "__main__":
     app.run()

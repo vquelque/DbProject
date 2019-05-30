@@ -63,7 +63,7 @@ def queries():
                     "SELECT o.LISTING_ID "
                     "FROM OFFER o, HOST h "
                     "WHERE (o.HOST_ID = h.HOST_ID) AND (h.HOST_NAME = 'Viajes Eco') "
-                ");"
+                ") "
         },
         {
         "id": 6,
@@ -261,7 +261,7 @@ def queries():
         "id": 14,
         "name": "Assigment2-Q4",
         "text":"Find the 5 most cheapest Apartments (based on average price within the available dates) in Berlin available between 01-03-2019 and 30-04-2019 having at least 2 beds, a location review score of at least 8, flexible cancellation, and listed by a host with a verifiable government id.",
-        "query":"SELECT o.LISTING_ID, o.NAME"
+        "query":"SELECT o.LISTING_ID, o.NAME "
                 "FROM PROPERTY p, OFFER o, SCORES sc, CALENDAR cal, CANCELLATION_POLICY cp "
                 "WHERE (p.BEDS >= 2) "
                 "    AND (p.PROPERTY_ID IN ( "
@@ -524,6 +524,51 @@ def queries():
                ") total "
                 "WHERE (partial.NEIGHBOURHOOD_ID = total.NEIGHBOURHOOD_ID) "
                     "AND ((partial.cnt_partial/total.cnt_total) >= 0.05) "
+        }
+    ]
+    return queries_list
+
+def para_queries():
+    queries_list= [
+        {
+        "id": 1,
+        "name": "Assigment1-Q2",
+        "text":"Find the average cleaning review score for listings with TV.",
+        "query":"SELECT AVG(s.review_scores_cleanliness) "
+                "FROM Scores s, Property p "
+                "WHERE (p.listing_id = s.listing_id) AND p.PROPERTY_ID IN ( "
+                "    SELECT h.PROPERTY_ID "
+                "    FROM HAS_AMENITIES h, AMENITY a "
+                "    WHERE (h.AMENITY_ID = a.AMENITY_ID) AND (a.AMENITY = 'TV') "
+                ") "
+        },
+        {
+        "id": 9,
+        "name": "Assigment1-Q9",
+        "text":"Find the top-10	(in terms of the number of listings) hosts (host_ids, host_names) in Spain.",
+        "query":"SELECT h.host_id, h.host_name "
+                "FROM Host h "
+                "WHERE h.host_id IN ( "
+                "    SELECT HOST_ID "
+                "    FROM ( "
+                "         SELECT o.HOST_ID, COUNT(o.HOST_ID) as cnt "
+                "         FROM OFFER o "
+                "         WHERE o.LISTING_ID IN ( "
+                "             SELECT p.LISTING_ID "
+                "             FROM PROPERTY p, ADDRESS a "
+                "             WHERE (a.PROPERTY_ID = p.PROPERTY_ID) AND a.NEIGHBOURHOOD_ID IN ( "
+                "                SELECT n.NEIGHBOURHOOD_ID "
+                "                FROM NEIGHBOURHOOD n, CITY city, COUNTRY country "
+                "                WHERE (n.CITY_ID = city.CITY_ID) "
+                "                 AND (city.COUNTRY_ID = country.COUNTRY_ID) "
+                "                 AND (country.COUNTRY = 'Spain') "
+                "             ) "
+                "         ) "
+                "         GROUP BY o.HOST_ID "
+                "         ORDER BY cnt DESC "
+                "         FETCH FIRST 10 ROWS ONLY "
+                "    ) "
+                ") "
         }
     ]
     return queries_list
