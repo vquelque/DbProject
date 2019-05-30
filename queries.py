@@ -2,7 +2,7 @@ def queries():
     queries_list= [
         {
         "id": 1,
-        "name": "Assigment1-Q1",
+        "name": "Assignment1-Q1",
         "text":"Find the average price for a listing with 8 bedrooms. ",
         "query":"SELECT AVG(price.price) "
                 "FROM Prices price "
@@ -15,7 +15,7 @@ def queries():
         },
         {
         "id": 2,
-        "name": "Assigment1-Q2",
+        "name": "Assignment1-Q2",
         "text":"Find the average cleaning review score for listings with TV.",
         "query":"SELECT AVG(s.review_scores_cleanliness) "
                 "FROM Scores s, Property p "
@@ -27,7 +27,7 @@ def queries():
         },
         {
         "id": 3,
-        "name": "Assigment1-Q3",
+        "name": "Assignment1-Q3",
         "text":"Print all the hosts who have an available property between date 03.2019 and 09.2019.",
         "query":"SELECT DISTINCT h.HOST_ID, h.HOST_NAME "
                 "FROM HOST h "
@@ -43,7 +43,7 @@ def queries():
         },
         {
         "id": 4,
-        "name": "Assigment1-Q4",
+        "name": "Assignment1-Q4",
         "text":"Print how many listing items exist that are posted by two different hosts but the hosts have the same name.",
         "query":"SELECT COUNT(o.listing_id) "
                 "FROM Offer o "
@@ -55,7 +55,7 @@ def queries():
         },
         {
         "id": 5,
-        "name": "Assigment1-Q5",
+        "name": "Assignment1-Q5",
         "text":"Print all the dates that 'Viajes Eco' has available accommodations for rent.",
         "query":"SELECT DISTINCT c.DATE_ "
                 "FROM Calendar c "
@@ -67,7 +67,7 @@ def queries():
         },
         {
         "id": 6,
-        "name": "Assigment1-Q6",
+        "name": "Assignment1-Q6",
         "text":"Find all the hosts (host_ids, host_names) that have only one listing.",
         "query":"SELECT h.HOST_ID, h.HOST_NAME "
                 "FROM HOST h, OFFER o "
@@ -77,7 +77,7 @@ def queries():
         },
         {
         "id": 7,
-        "name": "Assigment1-Q7",
+        "name": "Assignment1-Q7",
         "text":"Find the difference in the average price of listings with and without WIFI.",
         "query":"SELECT (SELECT AVG(p.price) "
                 "FROM Prices p "
@@ -106,7 +106,7 @@ def queries():
         },
         {
         "id": 8,
-        "name": "Assigment1-Q8",
+        "name": "Assignment1-Q8",
         "text":"How much more (or less) costly to rent a room with 8 beds in Berlin compared to Madrid on average?",
         "query":"SELECT( SELECT AVG(p.price) "
                 "FROM Prices p "
@@ -141,7 +141,7 @@ def queries():
         },
         {
         "id": 9,
-        "name": "Assigment1-Q9",
+        "name": "Assignment1-Q9",
         "text":"Find the top-10	(in terms of the	number of listings) hosts (host_ids, host_names) in Spain.",
         "query":"SELECT h.host_id, h.host_name "
                 "FROM Host h "
@@ -169,7 +169,7 @@ def queries():
         },
         {
         "id": 10,
-        "name": "Assigment1-Q10",
+        "name": "Assignment1-Q10",
         "text":"Find the top-10	rated (review_score_rating) apartments	(id,name) in Barcelona.",
         "query":"SELECT o.listing_id, o.name "
                 "FROM Offer o, Scores s "
@@ -191,7 +191,7 @@ def queries():
         },
         {
         "id": 11,
-        "name": "Assigment2-Q1",
+        "name": "Assignment2-Q1",
         "text":"Print how many hosts in each city have declared the area of their property in square meters. Sort the output based on the city name in ascending order.",
         "query":"SELECT c.CITY, COUNT(DISTINCT o.HOST_ID) as cnt_host "
                 "FROM OFFER o, PROPERTY p, ADDRESS a, CITY c, NEIGHBOURHOOD n "
@@ -203,7 +203,7 @@ def queries():
         },
         {
         "id": 12,
-        "name": "Assigment2-Q2",
+        "name": "Assignment2-Q2",
         "text":"The quality of a neighborhood is defined based on the number of listings and the review score of these listings, one way for computing that is using the median of the review scores, as medians are more robust to outliers. Find the top-5 neighborhoods using median review scores of listings in Madrid. Note: Implement the median operator on your own, and do not use the available built-in operator.",
         "query":"WITH BASE AS "
                 "( "
@@ -240,7 +240,7 @@ def queries():
         },
         {
         "id": 13,
-        "name": "Assigment2-Q3",
+        "name": "Assignment2-Q3",
         "text":"Find all the hosts (host_ids, host_names) with the highest number of listings.",
         "query":"SELECT h.HOST_ID, h.HOST_NAME "
                 "FROM HOST h, OFFER o "
@@ -259,7 +259,7 @@ def queries():
         },
         {
         "id": 14,
-        "name": "Assigment2-Q4",
+        "name": "Assignment2-Q4",
         "text":"Find the 5 most cheapest Apartments (based on average price within the available dates) in Berlin available between 01-03-2019 and 30-04-2019 having at least 2 beds, a location review score of at least 8, flexible cancellation, and listed by a host with a verifiable government id.",
         "query":"SELECT o.LISTING_ID, o.NAME "
                 "FROM PROPERTY p, OFFER o, SCORES sc, CALENDAR cal, CANCELLATION_POLICY cp "
@@ -308,7 +308,7 @@ def queries():
         },
         {
         "id": 15,
-        "name": "Assigment2-Q5",
+        "name": "Assignment2-Q5",
         "text":"Each property can accommodate different number of people (1 to 16). Find the top-5 rated (review_score_rating) listings for each distinct category based on number of accommodated guests with at least two of these facilities: Wifi, Internet, TV, and Free street parking.",
         "query":"SELECT cnt.ACCOMMODATES, cnt.listing_id, cnt.NAME "
                 "FROM "
@@ -331,7 +331,7 @@ def queries():
         },
         {
         "id": 16,
-        "name": "Assigment2-Q6",
+        "name": "Assignment2-Q6",
         "text":"What are top three busiest listings per host? The more reviews a listing has, the busier the listing is.",
         "query":"SELECT rk_tab.HOST_ID, rk_tab.HOST_NAME, rk_tab.LISTING_ID "
                 "FROM ( "
@@ -346,7 +346,7 @@ def queries():
         },
         {
         "id": 17,
-        "name": "Assigment2-Q7",
+        "name": "Assignment2-Q7",
         "text":"What are the three most frequently used amenities at each neighborhood in Berlin for the listings with “Private Room” room type?",
         "query":"SELECT rk_tab.NEIGHBOURHOOD_ID, rk_tab.AMENITY "
                 "FROM "
@@ -370,7 +370,7 @@ def queries():
         },
         {
         "id": 18,
-        "name": "Assigment2-Q8",
+        "name": "Assignment2-Q8",
         "text":"What is the difference in the average communication review score of the host who has the most diverse way of verifications and of the host who has the least diverse way of verifications. In case of a multiple number of the most or the least diverse verifying hosts, pick a host one from the most and one from the least verifying hosts.",
         "query":"WITH BASE AS "
                 "( "
@@ -398,7 +398,7 @@ def queries():
         },
         {
         "id": 19,
-        "name": "Assigment2-Q9",
+        "name": "Assignment2-Q9",
         "text":"What is the city who has the highest number of reviews for the room types whose average number of accommodates are greater than 3.",
         "query":"SELECT rk_tab.CITY, rk_tab.ROOM_TYPE "
                 "FROM "
@@ -420,7 +420,7 @@ def queries():
         },
         {
         "id": 20,
-        "name": "Assigment2-Q10",
+        "name": "Assignment2-Q10",
         "text":"Print all the neighbourhouds in Madrid which had at least 50 percent of their listings occupied in 2019 and their host has joined airbnb no later than 01.06.2017.",
         "query":"WITH BASE AS ( "
                 "SELECT n.NEIGHBOURHOOD_ID, p.LISTING_ID, n.NEIGHBOURHOOD, c.AVAILABLE "
@@ -459,7 +459,7 @@ def queries():
         },
         {
         "id": 21,
-        "name": "Assigment2-Q11",
+        "name": "Assignment2-Q11",
         "text":"Print all the countries that had at least 20% of their listings available at some date in year 2018",
         "query":"WITH BASE AS ( "
                 "SELECT country.COUNTRY_ID, COUNTRY.COUNTRY, p.LISTING_ID, c.AVAILABLE "
@@ -495,7 +495,7 @@ def queries():
         },
         {
         "id": 22,
-        "name": "Assigment2-Q12",
+        "name": "Assignment2-Q12",
         "text":"Print all the neighborhoods in Barcelona where more than 5 percent of their accommodation’s cancelation policy is strict with grace period.",
         "query":"WITH BASE AS ( "
                 "SELECT n.NEIGHBOURHOOD_ID, n.NEIGHBOURHOOD, o.CANCELLATION_POLICY_ID, o.LISTING_ID, cp.CANCELLATION_POLICY "
@@ -532,7 +532,7 @@ def para_queries():
     queries_list= [
         {
         "id": 1,
-        "name": "Assigment1-Q2",
+        "name": "Assignment1-Q2",
         "text":"Find the average cleaning review score for listings with TV.",
         "query":"SELECT AVG(s.review_scores_cleanliness) "
                 "FROM Scores s, Property p "
@@ -544,7 +544,7 @@ def para_queries():
         },
         {
         "id": 9,
-        "name": "Assigment1-Q9",
+        "name": "Assignment1-Q9",
         "text":"Find the top-10	(in terms of the number of listings) hosts (host_ids, host_names) in Spain.",
         "query":"SELECT h.host_id, h.host_name "
                 "FROM Host h "
